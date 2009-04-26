@@ -1,0 +1,15 @@
+Metadata-Version: 1.0
+Name: thepian-lib
+Version: 0.1
+Summary: The Thepian Library
+Home-page: www.thepian.org
+Author: Henrik Vendelbo
+Author-email: hvendelbo.dev@googlemail.com
+License: GPL
+Description: UNKNOWN
+Keywords: thepian lib
+Platform: UNKNOWN
+Classifier: Development Status :: Alpha
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 2.5
