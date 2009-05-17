@@ -42,13 +42,18 @@ def get_ip4_addresses(ifname=None):
 def get_ip4_address(ifname=None):
     return get_ip4_addresses(ifname)[0]
 
+def _unpack_mac(entry):
+    if not entry: return None
+    if isinstance(entry,basestring): return entry
+    return entry[0]['addr']
+    
 def get_mac_addresses(ifname=None,ignore_nas=True,with_ip4=False):
     """By default ignore stuff like firewire"""
     try:
         import netifaces
         if ifname:
             info = netifaces.ifaddresses(ifname)
-            return ((info.get(18) or info.get(17))[0]['addr'],)
+            return (( _unpack_mac(info.get(18)) or _unpack_mac(info.get(17)) ),)
         else:
             addresses = []
             for ifce in netifaces.interfaces():
@@ -62,13 +67,13 @@ def get_mac_addresses(ifname=None,ignore_nas=True,with_ip4=False):
                 if with_ip4 and not ip4: continue
                 mac = if_addrs.get(17) or if_addrs.get(18)
                 if mac:
-                    addresses.append(mac[0]['addr'])
+                    addresses.append(_unpack_mac(mac))
             return addresses
     except Exception, e:
         import uuid
         # bit primitive, and not stable on mac
         m = hex(uuid.getnode())[2:-1].zfill(12)
-        return ( ':'.join((m[0:1],m[2:3],m[4:5],m[6:7],m[8:9],m[10:11])), )
+        return ( ':'.join((m[0:2],m[2:4],m[4:6],m[6:8],m[8:10],m[10:12])), )
 
 def get_mac_address(ifname=None,ignore_nas=True,with_ip4=False):
     return get_mac_addresses(ifname)[0]
