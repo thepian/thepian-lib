@@ -1,3 +1,4 @@
+from stat import *
 
 def check_filters(base_path,file_name,lstat_info,filters):
     for f in filters:
@@ -10,22 +11,39 @@ def check_filters(base_path,file_name,lstat_info,filters):
         
 
 def no_hidden(base_path,file_name,lstat_info):
+    """Exclude any hidden directory or file"""
     if file_name.startswith("."):
         return False
         
+def only_hidden(base_path,file_name,lstat_info):
+    """Exclude any non-hidden file or directory"""
+    if not file_name.startswith("."):
+        return False
+
+def any_hidden(base_path,file_name,lstat_info):
+    """Include any file or directory that is hidden"""
+    if file_name.startswith("."):
+        return True
+
 def no_system(base_path,file_name,lstat_info):
-    if file_name == ".DS_Store":
+    if not lstat_info:
+        return False
+    if S_ISCHR(lstat_info[ST_MODE]):
+        return False
+    if S_ISSOCK(lstat_info[ST_MODE]):
+        return False
+    if S_ISFIFO(lstat_info[ST_MODE]):
+        return False
+    if file_name in (".DS_Store",".Trashes",".fseventsd",".hotfiles.btree",".vol"):
         return False
         
 def no_directories(base_path,file_name,lstat_info):
-    from stat import S_ISDIR, ST_MODE
     if not lstat_info:
         return False
     if S_ISDIR(lstat_info[ST_MODE]):
         return False
         
 def only_directories(base_path,file_name,lstat_info):
-    from stat import S_ISDIR, ST_MODE
     if not lstat_info:
         return False
     if not S_ISDIR(lstat_info[ST_MODE]):
