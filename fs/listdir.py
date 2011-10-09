@@ -2,20 +2,29 @@ import os
 import filters as fs_filters
 from walk import walk
 
-def listdir(dir_path,filters=(fs_filters.no_hidden,fs_filters.no_system),full_path=False,recursed=False,followlinks=True):
+def listdir(dir_path,filters=(fs_filters.no_hidden,fs_filters.no_system),full_path=False,recursed=False,followlinks=True,base=None):
+    #TODO exclude_paths_list, list of rel paths to exclude/skip
+    prefix = len(dir_path)
+    if dir_path[-1] != "/": 
+        prefix += 1
+
+    r = []
     if recursed:
         r = []
-        for top,dirs,nondirs in walk(dir_path,use_nlink = followlinks and 2 or 1):
-            if full_path:
-                r.extend([os.path.join(top,nd) for nd in nondirs])
-            else:
-                r.extend([nd for nd in nondirs])
+        for top,dirs,nondirs in walk(dir_path,use_nlink = followlinks and 2 or 1,base=base):
+            r.extend([(top[prefix:],nd) for nd in nondirs])
         return r
+    else:
+        r = [("",name) for name in os.listdir(os.path.join(base or "",dir_path)) 
+            if fs_filters.check_filters(dir_path, "", name, os.lstat(os.path.join(base or "",dir_path,name)),filters)]
+
     if full_path:
-        return [os.path.join(dir_path,name) 
-                for name in os.listdir(dir_path) if fs_filters.check_filters(dir_path, name, os.lstat(os.path.join(dir_path,name)), filters)]
-    return [name for name in os.listdir(dir_path) if fs_filters.check_filters(dir_path,name,os.lstat(os.path.join(dir_path,name)),filters)]
-    
+        return [os.path.join(dir_path,rel,name) for rel,name in r]
+
+    return [os.path.join(rel,name) for rel,name in r]
+ 
+
+
 def _permissive_lstat(path):
     try:
         return os.lstat(path)

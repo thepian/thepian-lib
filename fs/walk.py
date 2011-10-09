@@ -11,26 +11,27 @@ def isrealdir(path):
         return False
     return S_ISDIR(st.st_mode)
 
-def walk(top, topdown=True, onerror=None, use_nlink=1,filters=(fs_filters.no_hidden,fs_filters.no_system)):
+def walk(top, topdown=True, onerror=None, use_nlink=1,filters=(fs_filters.no_hidden,fs_filters.no_system),base=None):
     # use_nlink:
     #    0 = ignore nlink
     #    1 = try to use nlink
     #    2 = use nlink
 
+    path = base and join(top,base) or top
     try:
-        names = listdir(top)
+        names = listdir(path)
     except error, err:
         if onerror is not None:
             onerror(err)
         return
 
     try:
-        nlink = lstat(top).st_nlink
+        nlink = lstat(path).st_nlink
     except error:
         nlink = -1
     dirs, nondirs = [], []
     for name in names:
-        passed = fs_filters.check_filters(top,name,lstat(join(top,name)),filters)
+        passed = fs_filters.check_filters(base or "",top,name,lstat(join(path,name)),filters)
         if not passed: continue
         if use_nlink == 2 and nlink - 2 == len(dirs):
             nondirs.append(name)
@@ -46,8 +47,8 @@ def walk(top, topdown=True, onerror=None, use_nlink=1,filters=(fs_filters.no_hid
     if topdown:
         yield top, dirs, nondirs
     for name in dirs:
-        path = join(top, name)
-        for x in walk(path, topdown, onerror, use_nlink):
+        path = base and join(base, name) or name
+        for x in walk(path, topdown=topdown, onerror=onerror, use_nlink=use_nlink,filters=filters,base=base):
             yield x
     if not topdown:
         yield top, dirs, nondirs
