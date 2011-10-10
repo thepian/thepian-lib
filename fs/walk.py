@@ -17,7 +17,7 @@ def walk(top, topdown=True, onerror=None, use_nlink=1,filters=(fs_filters.no_hid
     #    1 = try to use nlink
     #    2 = use nlink
 
-    path = base and join(top,base) or top
+    path = base and join(base,top) or top
     try:
         names = listdir(path)
     except error, err:
@@ -35,7 +35,7 @@ def walk(top, topdown=True, onerror=None, use_nlink=1,filters=(fs_filters.no_hid
         if not passed: continue
         if use_nlink == 2 and nlink - 2 == len(dirs):
             nondirs.append(name)
-        elif isrealdir(join(top, name)):
+        elif isrealdir(join(base or "", top, name)):
             dirs.append(name)
         else:
             nondirs.append(name)
@@ -47,8 +47,7 @@ def walk(top, topdown=True, onerror=None, use_nlink=1,filters=(fs_filters.no_hid
     if topdown:
         yield top, dirs, nondirs
     for name in dirs:
-        path = base and join(base, name) or name
-        for x in walk(path, topdown=topdown, onerror=onerror, use_nlink=use_nlink,filters=filters,base=base):
+        for x in walk(join(top,name), topdown=topdown, onerror=onerror, use_nlink=use_nlink,filters=filters,base=base):
             yield x
     if not topdown:
         yield top, dirs, nondirs

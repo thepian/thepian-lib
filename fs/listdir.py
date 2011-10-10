@@ -3,7 +3,7 @@ import filters as fs_filters
 from walk import walk
 
 def listdir(dir_path,filters=(fs_filters.no_hidden,fs_filters.no_system),full_path=False,recursed=False,followlinks=True,base=None):
-    #TODO exclude_paths_list, list of rel paths to exclude/skip
+    with_base = os.path.join(base or "",dir_path)
     prefix = len(dir_path)
     if dir_path[-1] != "/": 
         prefix += 1
@@ -13,10 +13,11 @@ def listdir(dir_path,filters=(fs_filters.no_hidden,fs_filters.no_system),full_pa
         r = []
         for top,dirs,nondirs in walk(dir_path,use_nlink = followlinks and 2 or 1,base=base):
             r.extend([(top[prefix:],nd) for nd in nondirs])
-        return r
     else:
-        r = [("",name) for name in os.listdir(os.path.join(base or "",dir_path)) 
-            if fs_filters.check_filters(dir_path, "", name, os.lstat(os.path.join(base or "",dir_path,name)),filters)]
+        def check(name):
+            #TODO consider (base, dir_path,name, ...)
+            return fs_filters.check_filters(dir_path, "", name, os.lstat(os.path.join(base or "",dir_path,name)),filters)
+        r = [("",name) for name in os.listdir(with_base) if check(name)]
 
     if full_path:
         return [os.path.join(dir_path,rel,name) for rel,name in r]

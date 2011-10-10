@@ -6,6 +6,7 @@ dir3 = os.path.join(os.path.dirname(__file__),'dir3')
 dir4 = os.path.join(os.path.dirname(__file__),'dir4')
 dir5 = os.path.join(os.path.dirname(__file__),'dir4',"dir5")
 dir6 = os.path.join(os.path.dirname(__file__),'dir4',"dir6")
+dir7 = os.path.join(os.path.dirname(__file__),'dir4',"dir6","dir7")
 del os
 
 import fs
@@ -13,9 +14,18 @@ import fs
 def test_walk():
     l = [(top, dirs, nondirs) for top, dirs, nondirs in fs.walk(dir4)]
     assert l == [
-        (dir4, ["dir5","dir6"], []),
-#        (dir5, [], ["test2.test"]),
-#        (dir6, ["dir7"], ["test.test"]),
+        (dir4, ["dir5","dir6"], ["test3.test"]),
+        (dir5, [], ["test2.test"]),
+        (dir6, ["dir7"], []),
+        (dir7, [], ["test.test"]),
+    ]
+    
+    l = [(top, dirs, nondirs) for top, dirs, nondirs in fs.walk("dir4",base=base_dir)]
+    assert l == [
+        ("dir4", ["dir5","dir6"], ["test3.test"]),
+        ("dir4/dir5", [], ["test2.test"]),
+        ("dir4/dir6", ["dir7"], []),
+        ("dir4/dir6/dir7", [], ["test.test"]),
     ]
     
 def test_listdir_stats():
@@ -39,6 +49,16 @@ def test_listdir_path():
     l6 = fs.listdir("dir1",base=base_dir,full_path=True)
     assert l6 == [ "dir1/dir2" ]
 
+def test_listdir_recursed():
+    l = fs.listdir(dir4,recursed=True)
+    assert l == ["test3.test","dir5/test2.test","dir6/dir7/test.test"]
+
+    l = fs.listdir("dir4",recursed=True,base=base_dir)
+    assert l == ["test3.test","dir5/test2.test","dir6/dir7/test.test"]
+
+    l = fs.listdir("dir4",recursed=True,base=base_dir,full_path=True)
+    assert l == ["dir4/test3.test","dir4/dir5/test2.test","dir4/dir6/dir7/test.test"]
+
 def test_fnmatch():
     l = fs.listdir(dir3)
     assert len(l) == 3
@@ -49,4 +69,9 @@ def test_fnmatch():
     
     l3 = fs.listdir(dir3,filters=(fs.filters.fnmatch("*.test2"),))
     assert l3 == ["file2.test2",]
+
+def test_exclude_paths():
+    l = fs.listdir(dir3,filters=(fs.filters.exclude_paths(["*.test2","*.test3"]),))
+    assert l == ["file1.test1","file3.test1"]
+
     

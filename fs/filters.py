@@ -57,4 +57,29 @@ class fnmatch(object):
         from fnmatch import fnmatch
         if not fnmatch(file_name,self.pattern):
             return False
+
+class exclude_paths(object):
+    def __init__(self,excludes):
+        specific = []
+        wildcards = []
+        for e in excludes:
+            if "*" in e: 
+                wildcards.append(e)
+            else:
+                specific.append(e)
+        self.specific = set(specific)
+        self.wildcards = wildcards
+
+    def __call__(self,base_path,rel_path,file_name,lstat_info):
+        from fnmatch import fnmatch
+        from os.path import split
+
+        if rel_path in self.specific:
+            return False
+
+        for e in self.wildcards:
+            if fnmatch(file_name,e):
+                return False
+
+
     
