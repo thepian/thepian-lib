@@ -70,6 +70,13 @@ def test_fnmatch():
     l3 = fs.listdir(dir3,filters=(fs.filters.fnmatch("*.test2"),))
     assert l3 == ["file2.test2",]
 
+def test_recursed_fnmatch():
+    l2 = fs.listdir(dir3,recursed=True,filters=(fs.filters.fnmatch("*.test1"),))
+    assert l2 == ["file1.test1","file3.test1"]
+    
+    l3 = fs.listdir(dir3,recursed=True,filters=(fs.filters.fnmatch("*.test2"),))
+    assert l3 == ["file2.test2",]
+
 def test_exclude_paths():
     l = fs.listdir(dir3,filters=(fs.filters.exclude_paths(["*.test2","*.test3"]),))
     assert l == ["file1.test1","file3.test1"]

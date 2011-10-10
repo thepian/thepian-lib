@@ -11,7 +11,7 @@ def listdir(dir_path,filters=(fs_filters.no_hidden,fs_filters.no_system),full_pa
     r = []
     if recursed:
         r = []
-        for top,dirs,nondirs in walk(dir_path,use_nlink = followlinks and 2 or 1,base=base):
+        for top,dirs,nondirs in walk(dir_path,use_nlink = followlinks and 2 or 1,filters=filters,base=base):
             r.extend([(top[prefix:],nd) for nd in nondirs])
     else:
         def check(name):
